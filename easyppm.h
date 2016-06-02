@@ -24,16 +24,23 @@ typedef enum {
 } imagetype;
 
 typedef struct {
-    int      width;
-    int      height;
-    int      size;
-    uint8_t* image;
+    int       width;
+    int       height;
+    uint8_t*  image;
+    origin    otype;
+    imagetype itype;
 } ppmstruct;
 
-ppmstruct easyppm_create(int width, int height, imagetype image, origin o);
-void easyppm_clear(ppmstruct* ppm, color c);
-void easyppm_write(ppmstruct* ppm, const char* path);
-void easyppm_destroy(ppmstruct* ppm);
+ppmstruct easyppm_create(int width, int height, imagetype itype, origin otype);
+void      easyppm_clear(ppmstruct* ppm, color c);
+void      easyppm_set(ppmstruct* ppm, int x, int y, color c);
+color     easyppm_get(ppmstruct* ppm, int x, int y);
+color     easyppm_rgb(uint8_t r, uint8_t g, uint8_t b);
+color     easyppm_rgb_float(float r, float g, float b);
+color     easyppm_grey(uint8_t gr);
+color     easyppm_grey_float(float gr);
+void      easyppm_write(ppmstruct* ppm, const char* path);
+void      easyppm_destroy(ppmstruct* ppm);
 
 #ifdef __cplusplus
 }
