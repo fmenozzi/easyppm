@@ -17,6 +17,7 @@ void      easyppm_write(ppmstruct* ppm, const char* path);
 void      easyppm_destroy(ppmstruct* ppm);
 
 static void easyppm_abort(ppmstruct* ppm, const char* msg);
+static void easyppm_check_extension(ppmstruct* ppm, const char* path);
 
 ppmstruct easyppm_create(int width, int height, imagetype itype, origin otype) {
     ppmstruct ppm;
@@ -123,6 +124,8 @@ void easyppm_read(ppmstruct* ppm, const char* path, origin otype) {
     int x, y;
     color c;
 
+    easyppm_check_extension(ppm, path);
+
     easyppm_destroy(ppm);
 
     ppm->otype = otype;
@@ -185,9 +188,11 @@ void easyppm_write(ppmstruct* ppm, const char* path) {
     FILE* fp;
     int x, y;
 
+    easyppm_check_extension(ppm, path);
+
     fp = fopen(path, "w");
     if (!fp)
-        easyppm_abort(NULL, "Could not open file for writing");
+        easyppm_abort(ppm, "Could not open file for writing");
 
     fprintf(fp, ppm->itype == IMAGETYPE_PGM ? "P2\n" : "P3\n");
     fprintf(fp, "%d %d %d\n", ppm->width, ppm->height, 255);
@@ -223,4 +228,16 @@ static void easyppm_abort(ppmstruct* ppm, const char* msg) {
     fprintf(stderr, "Aborting\n");
     easyppm_destroy(ppm);
     exit(EXIT_FAILURE);
+}
+
+static void easyppm_check_extension(ppmstruct* ppm, const char* path) {
+    const char* extension;
+    int i;
+    for (i = 0; i < strlen(path); i++)
+        if (path[i] == '.')
+            extension = &path[i];
+    if (ppm->itype == IMAGETYPE_PGM && strcmp(extension, ".pgm") != 0)
+        easyppm_abort(ppm, "File path for PGM file does not end in .pgm");
+    if (ppm->itype == IMAGETYPE_PPM && strcmp(extension, ".ppm") != 0)
+        easyppm_abort(ppm, "File path for PPM file does not end in .ppm");
 }
