@@ -7,6 +7,8 @@ extern "C" {
 
 #include <stdint.h>
 
+#define EASYPPM_NUM_CHANNELS 3
+
 typedef struct {
     uint8_t r;  
     uint8_t g;  
@@ -26,7 +28,7 @@ typedef enum {
 typedef struct {
     int       width;
     int       height;
-    color*    image;
+    uint8_t*  image;
     origin    otype;
     imagetype itype;
 } ppmstruct;

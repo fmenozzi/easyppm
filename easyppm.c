@@ -28,7 +28,11 @@ ppmstruct easyppm_create(int width, int height, imagetype itype, origin otype) {
 
     ppm.width  = width;
     ppm.height = height;
-    ppm.image  = (color*)malloc(sizeof(*ppm.image) * width*height);
+    if (itype == IMAGETYPE_PGM) {
+        ppm.image  = (uint8_t*)malloc(sizeof(*ppm.image) * width*height);
+    } else {
+        ppm.image  = (uint8_t*)malloc(sizeof(*ppm.image) * width*height*EASYPPM_NUM_CHANNELS);
+    }
     ppm.otype  = otype;
     ppm.itype  = itype;
 
@@ -43,11 +47,29 @@ void easyppm_clear(ppmstruct* ppm, color c) {
 }
 
 void easyppm_set(ppmstruct* ppm, int x, int y, color c) {
-    ppm->image[x + y*ppm->width] = c;
+    int i = x + y*ppm->width;
+    if (ppm->itype == IMAGETYPE_PGM) {
+        ppm->image[i] = c.r;
+    } else {
+        ppm->image[EASYPPM_NUM_CHANNELS*i + 0] = c.r;
+        ppm->image[EASYPPM_NUM_CHANNELS*i + 1] = c.g;
+        ppm->image[EASYPPM_NUM_CHANNELS*i + 2] = c.b;
+    }
 }
 
 color easyppm_get(ppmstruct* ppm, int x, int y) {
-    return ppm->image[x + y*ppm->width];
+    color c;
+    int i = x + y*ppm->width;
+    if (ppm->itype == IMAGETYPE_PGM) {
+        c.r = ppm->image[i];
+        c.g = ppm->image[i];
+        c.b = ppm->image[i];
+    } else {
+        c.r = ppm->image[EASYPPM_NUM_CHANNELS*i + 0];
+        c.g = ppm->image[EASYPPM_NUM_CHANNELS*i + 1];
+        c.b = ppm->image[EASYPPM_NUM_CHANNELS*i + 2];
+    }
+    return c;
 }
 
 color easyppm_rgb(uint8_t r, uint8_t g, uint8_t b) {
@@ -96,7 +118,7 @@ color easyppm_grey_float(float gr) {
  */
 void easyppm_read(ppmstruct* ppm, const char* path, origin otype) {
     FILE* fp;
-    char itype[3];
+    char itypestr[3];
     int width, height, dummy;
     int x, y;
     color c;
@@ -109,8 +131,8 @@ void easyppm_read(ppmstruct* ppm, const char* path, origin otype) {
     if (!fp)
         easyppm_abort(NULL, "Could not open file for reading");
 
-    fscanf(fp, "%s\n", itype);
-    if (strcmp(itype, "P2") == 0) {
+    fscanf(fp, "%s\n", itypestr);
+    if (strcmp(itypestr, "P2") == 0) {
         ppm->itype = IMAGETYPE_PGM;
     } else {
         ppm->itype = IMAGETYPE_PPM;
@@ -128,7 +150,11 @@ void easyppm_read(ppmstruct* ppm, const char* path, origin otype) {
         easyppm_abort(NULL, "Passed negative height");
     }
 
-    ppm->image = (color*)malloc(sizeof(*ppm->image) * width*height);
+    if (ppm->itype == IMAGETYPE_PGM) {
+        ppm->image  = (uint8_t*)malloc(sizeof(*ppm->image) * width*height);
+    } else {
+        ppm->image  = (uint8_t*)malloc(sizeof(*ppm->image) * width*height*EASYPPM_NUM_CHANNELS);
+    }
 
     for (x = 0; x < width; x++) {
         for (y = 0; y < height; y++) {
