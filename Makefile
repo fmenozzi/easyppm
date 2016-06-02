@@ -2,7 +2,7 @@ GCC = gcc -Wall -pedantic
 
 GCC_DEBUG = @$(GCC) -g
 
-CMD = test.c easyppm.c -o test && ./test
+CMD = test.c easyppm.c -o test -lm && ./test
 
 all: run
 

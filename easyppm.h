@@ -41,6 +41,7 @@ color     easyppm_rgb(uint8_t r, uint8_t g, uint8_t b);
 color     easyppm_rgb_float(float r, float g, float b);
 color     easyppm_grey(uint8_t gr);
 color     easyppm_grey_float(float gr);
+void      easyppm_gamma_correct(ppmstruct* ppm, float gamma);
 void      easyppm_read(ppmstruct* ppm, const char* path, origin otype);
 void      easyppm_write(ppmstruct* ppm, const char* path);
 void      easyppm_destroy(ppmstruct* ppm);

@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 ppmstruct easyppm_create(int width, int height, imagetype itype, origin otype);
 void      easyppm_clear(ppmstruct* ppm, color c);
@@ -12,6 +13,7 @@ color     easyppm_rgb(uint8_t r, uint8_t g, uint8_t b);
 color     easyppm_rgb_float(float r, float g, float b);
 color     easyppm_grey(uint8_t gr);
 color     easyppm_grey_float(float gr);
+void      easyppm_gamma_correct(ppmstruct* ppm, float gamma);
 void      easyppm_read(ppmstruct* ppm, const char* path, origin otype);
 void      easyppm_write(ppmstruct* ppm, const char* path);
 void      easyppm_destroy(ppmstruct* ppm);
@@ -42,6 +44,7 @@ ppmstruct easyppm_create(int width, int height, imagetype itype, origin otype) {
 
 void easyppm_clear(ppmstruct* ppm, color c) {
     int x, y;
+
     for (x = 0; x < ppm->width; x++)
         for (y = 0; y < ppm->height; y++)
             easyppm_set(ppm, x, y, c);
@@ -49,6 +52,7 @@ void easyppm_clear(ppmstruct* ppm, color c) {
 
 void easyppm_set(ppmstruct* ppm, int x, int y, color c) {
     int i = x + y*ppm->width;
+
     if (ppm->itype == IMAGETYPE_PGM) {
         ppm->image[i] = c.r;
     } else {
@@ -61,6 +65,7 @@ void easyppm_set(ppmstruct* ppm, int x, int y, color c) {
 color easyppm_get(ppmstruct* ppm, int x, int y) {
     color c;
     int i = x + y*ppm->width;
+
     if (ppm->itype == IMAGETYPE_PGM) {
         c.r = ppm->image[i];
         c.g = ppm->image[i];
@@ -114,6 +119,27 @@ color easyppm_grey_float(float gr) {
     return c;
 }
 
+void easyppm_gamma_correct(ppmstruct* ppm, float gamma) {
+    int x, y;
+    float r, g, b;
+    float exp;
+    color c;
+
+    for (x = 0; x < ppm->width; x++) {
+        for (y = 0; y < ppm->height; y++) {
+            c = easyppm_get(ppm, x, y);
+
+            exp = 1 / gamma;
+
+            r = powf(c.r / 255.f, exp);
+            g = powf(c.g / 255.f, exp);
+            b = powf(c.b / 255.f, exp);
+
+            easyppm_set(ppm, x, y, easyppm_rgb_float(r,g,b));
+        }
+    }
+}
+
 /*
  * Read image from file
  */
@@ -122,6 +148,8 @@ void easyppm_read(ppmstruct* ppm, const char* path, origin otype) {
     char itypestr[3];
     int width, height, dummy;
     int x, y;
+    int gr;
+    int r, g, b;
     color c;
 
     easyppm_check_extension(ppm, path);
@@ -154,21 +182,19 @@ void easyppm_read(ppmstruct* ppm, const char* path, origin otype) {
     }
 
     if (ppm->itype == IMAGETYPE_PGM) {
-        ppm->image  = (uint8_t*)malloc(sizeof(*ppm->image) * width*height);
+        ppm->image = (uint8_t*)malloc(sizeof(*ppm->image) * width*height);
     } else {
-        ppm->image  = (uint8_t*)malloc(sizeof(*ppm->image) * width*height*EASYPPM_NUM_CHANNELS);
+        ppm->image = (uint8_t*)malloc(sizeof(*ppm->image) * width*height*EASYPPM_NUM_CHANNELS);
     }
 
     for (x = 0; x < width; x++) {
         for (y = 0; y < height; y++) {
             if (ppm->itype == IMAGETYPE_PGM) {
-                int gr;
                 fscanf(fp, "%d\n", &gr);
                 c.r = gr;
                 c.g = gr;
                 c.b = gr;
             } else {
-                int r, g, b;
                 fscanf(fp, "%d %d %d\n", &r, &g, &b);
                 c.r = r;
                 c.g = g;
@@ -233,6 +259,7 @@ static void easyppm_abort(ppmstruct* ppm, const char* msg) {
 static void easyppm_check_extension(ppmstruct* ppm, const char* path) {
     const char* extension;
     int i;
+
     for (i = 0; i < strlen(path); i++)
         if (path[i] == '.')
             extension = &path[i];
