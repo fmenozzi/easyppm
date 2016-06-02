@@ -179,8 +179,8 @@ void easyppm_gamma_correct(ppmstruct* ppm, float gamma) {
 /*
  * Read image from file. Aborts if file could not be opened,
  * dimensions are invalid, or the file extension on the path
- * doesn't match the image type (.ppm for PPM files, .pgm for
- * PGM files).
+ * doesn't match the image type (.pbm for PBM files, .pgm for
+ * PGM files, and .ppm for PPM files).
  */
 void easyppm_read(ppmstruct* ppm, const char* path, origin otype) {
     FILE* fp;
@@ -262,7 +262,8 @@ void easyppm_read(ppmstruct* ppm, const char* path, origin otype) {
 /*
  * Write image to file. Aborts if file could not be opened or
  * the file extension on the path doesn't match the image type
- * (.ppm for PPM files, .pgm for PGM files).
+ * (.pbm for PBM files, .pgm for PGM files, and .ppm for PPM
+ * files).
  */
 void easyppm_write(ppmstruct* ppm, const char* path) {
     FILE* fp;
