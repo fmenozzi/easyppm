@@ -21,6 +21,9 @@ void      easyppm_destroy(ppmstruct* ppm);
 static void easyppm_abort(ppmstruct* ppm, const char* msg);
 static void easyppm_check_extension(ppmstruct* ppm, const char* path);
 
+/*
+ * Creates new ppmstruct from args, aborts if dimensions are invalid
+ */
 ppmstruct easyppm_create(int width, int height, imagetype itype, origin otype) {
     ppmstruct ppm;
 
@@ -42,16 +45,30 @@ ppmstruct easyppm_create(int width, int height, imagetype itype, origin otype) {
     return ppm;
 }
 
+/*
+ * Fill entire color buffer with specified color
+ */
 void easyppm_clear(ppmstruct* ppm, color c) {
     int x, y;
+
+    if (!ppm)
+        easyppm_abort(ppm, "Passed NULL ppmstruct to easyppm_clear()");
 
     for (x = 0; x < ppm->width; x++)
         for (y = 0; y < ppm->height; y++)
             easyppm_set(ppm, x, y, c);
 }
 
+/*
+ * Set appropriate color (RGB or greyscale)
+ */
 void easyppm_set(ppmstruct* ppm, int x, int y, color c) {
-    int i = x + y*ppm->width;
+    int i;
+
+    if (!ppm)
+        easyppm_abort(ppm, "Passed NULL ppmstruct to easyppm_set()");
+
+    i = x + y*ppm->width;
 
     if (ppm->itype == IMAGETYPE_PGM) {
         ppm->image[i] = c.r;
@@ -62,9 +79,17 @@ void easyppm_set(ppmstruct* ppm, int x, int y, color c) {
     }
 }
 
+/*
+ * Get appropriate color (RGB or greyscale)
+ */
 color easyppm_get(ppmstruct* ppm, int x, int y) {
     color c;
-    int i = x + y*ppm->width;
+    int i;
+
+    if (!ppm)
+        easyppm_abort(ppm, "Passed NULL ppmstruct to easyppm_get()");
+
+    i = x + y*ppm->width;
 
     if (ppm->itype == IMAGETYPE_PGM) {
         c.r = ppm->image[i];
@@ -78,6 +103,9 @@ color easyppm_get(ppmstruct* ppm, int x, int y) {
     return c;
 }
 
+/*
+ * Create color from 8-bit RGB values
+ */
 color easyppm_rgb(uint8_t r, uint8_t g, uint8_t b) {
     color c;
 
@@ -88,6 +116,9 @@ color easyppm_rgb(uint8_t r, uint8_t g, uint8_t b) {
     return c;
 }
 
+/*
+ * Create color from 32-bit float RGB values
+ */
 color easyppm_rgb_float(float r, float g, float b) {
     color c;
 
@@ -98,6 +129,9 @@ color easyppm_rgb_float(float r, float g, float b) {
     return c;
 }
 
+/*
+ * Create color from 8-bit greyscale value
+ */
 color easyppm_grey(uint8_t gr) {
     color c;
 
@@ -108,7 +142,9 @@ color easyppm_grey(uint8_t gr) {
     return c;
 }
 
-
+/*
+ * Create color from 32-bit float greyscale value
+ */
 color easyppm_grey_float(float gr) {
     color c;
 
@@ -119,17 +155,21 @@ color easyppm_grey_float(float gr) {
     return c;
 }
 
+/*
+ * Gamma-correct entire image by specified amount
+ */
 void easyppm_gamma_correct(ppmstruct* ppm, float gamma) {
     int x, y;
     float r, g, b;
-    float exp;
+    float exp = 1 / gamma;
     color c;
+
+    if (!ppm)
+        easyppm_abort(ppm, "Passed NULL ppmstruct to easyppm_gamma_correct()");
 
     for (x = 0; x < ppm->width; x++) {
         for (y = 0; y < ppm->height; y++) {
             c = easyppm_get(ppm, x, y);
-
-            exp = 1 / gamma;
 
             r = powf(c.r / 255.f, exp);
             g = powf(c.g / 255.f, exp);
@@ -141,7 +181,10 @@ void easyppm_gamma_correct(ppmstruct* ppm, float gamma) {
 }
 
 /*
- * Read image from file
+ * Read image from file. Aborts if file could not be opened,
+ * dimensions are invalid, or the file extension on the path
+ * doesn't match the image type (.ppm for PPM files, .pgm for
+ * PGM files).
  */
 void easyppm_read(ppmstruct* ppm, const char* path, origin otype) {
     FILE* fp;
@@ -151,6 +194,9 @@ void easyppm_read(ppmstruct* ppm, const char* path, origin otype) {
     int gr;
     int r, g, b;
     color c;
+
+    if (!ppm)
+        easyppm_abort(ppm, "Passed NULL ppmstruct to easyppm_read()");
 
     easyppm_check_extension(ppm, path);
 
@@ -208,11 +254,16 @@ void easyppm_read(ppmstruct* ppm, const char* path, origin otype) {
 }
 
 /*
- * Write image to file
+ * Write image to file. Aborts if file could not be opened or
+ * the file extension on the path doesn't match the image type
+ * (.ppm for PPM files, .pgm for PGM files).
  */
 void easyppm_write(ppmstruct* ppm, const char* path) {
     FILE* fp;
     int x, y;
+
+    if (!ppm)
+        easyppm_abort(ppm, "Passed NULL ppmstruct to easyppm_write()");
 
     easyppm_check_extension(ppm, path);
 
@@ -239,11 +290,12 @@ void easyppm_write(ppmstruct* ppm, const char* path) {
 }
 
 /*
- * Destroy ppmstruct
+ * Free image buffer
  */
 void easyppm_destroy(ppmstruct* ppm) {
-    if (ppm)
+    if (ppm && ppm->image)
         free(ppm->image);
+    ppm = NULL;
 }
 
 /*
@@ -259,6 +311,9 @@ static void easyppm_abort(ppmstruct* ppm, const char* msg) {
 static void easyppm_check_extension(ppmstruct* ppm, const char* path) {
     const char* extension;
     size_t i;
+
+    if (!ppm)
+        easyppm_abort(ppm, "Passed NULL ppmstruct to easyppm_check_extension()");
 
     for (i = 0; i < strlen(path); i++)
         if (path[i] == '.')
