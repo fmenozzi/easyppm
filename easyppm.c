@@ -60,13 +60,12 @@ color easyppm_rgb(uint8_t r, uint8_t g, uint8_t b) {
     return c;
 }
 
-/* TODO */
 color easyppm_rgb_float(float r, float g, float b) {
     color c;
 
-    c.r = 0;
-    c.g = 0;
-    c.b = 0;
+    c.r = r * 255;
+    c.g = g * 255;
+    c.b = b * 255;
 
     return c;
 }
@@ -82,13 +81,12 @@ color easyppm_grey(uint8_t gr) {
 }
 
 
-/* TODO */
 color easyppm_grey_float(float gr) {
     color c;
 
-    c.r = 0;
-    c.g = 0;
-    c.b = 0;
+    c.r = gr * 255;
+    c.g = gr * 255;
+    c.b = gr * 255;
 
     return c;
 }
@@ -121,10 +119,14 @@ void easyppm_read(ppmstruct* ppm, const char* path, origin otype) {
     fscanf(fp, "%d %d %d\n", &width, &height, &dummy);
     ppm->width  = width;
     ppm->height = height;
-    if (width <= 0)
+    if (width <= 0) {
+        fclose(fp);
         easyppm_abort(NULL, "Passed negative width");
-    if (height <= 0)
+    }
+    if (height <= 0) {
+        fclose(fp);
         easyppm_abort(NULL, "Passed negative height");
+    }
 
     ppm->image = (color*)malloc(sizeof(*ppm->image) * width*height);
 
@@ -146,6 +148,8 @@ void easyppm_read(ppmstruct* ppm, const char* path, origin otype) {
             easyppm_set(ppm, x, y, c);
         }
     }
+
+    fclose(fp);
 }
 
 /*

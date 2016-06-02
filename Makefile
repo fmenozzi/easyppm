@@ -4,13 +4,10 @@ GCC_DEBUG = @$(GCC) -g
 
 CMD = test.c easyppm.c -o test && ./test
 
-all: run clean
+all: run
 
 run: 
 	@$(GCC_DEBUG) $(CMD)
 
-delete:
-	@rm -f *.ppm *.pgm
-
 clean:
-	@rm -f test
+	@rm -f test *.ppm *.pgm
