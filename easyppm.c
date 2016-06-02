@@ -3,9 +3,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+ppmstruct easyppm_create(int width, int height, imagetype itype, origin otype);
+void      easyppm_clear(ppmstruct* ppm, color c);
+void      easyppm_set(ppmstruct* ppm, int x, int y, color c);
+color     easyppm_get(ppmstruct* ppm, int x, int y);
+color     easyppm_rgb(uint8_t r, uint8_t g, uint8_t b);
+color     easyppm_rgb_float(float r, float g, float b);
+color     easyppm_grey(uint8_t gr);
+color     easyppm_grey_float(float gr);
+void      easyppm_write(ppmstruct* ppm, const char* path);
+void      easyppm_destroy(ppmstruct* ppm);
+
+static void easyppm_abort(ppmstruct* ppm, const char* msg);
+
 ppmstruct easyppm_create(int width, int height, imagetype itype, origin otype) {
     ppmstruct ppm;
 
+    /* Reject invalid dimensions */
     if (width <= 0)
         easyppm_abort(NULL, "Passed negative width");
     if (height <= 0)
@@ -13,7 +27,7 @@ ppmstruct easyppm_create(int width, int height, imagetype itype, origin otype) {
 
     ppm.width  = width;
     ppm.height = height;
-    ppm.image  = (uint8_t*)malloc(sizeof(uint8_t) * width*height);
+    ppm.image  = (color*)malloc(sizeof(*ppm.image) * width*height);
     ppm.otype  = otype;
     ppm.itype  = itype;
 
@@ -25,6 +39,57 @@ void easyppm_clear(ppmstruct* ppm, color c) {
     for (x = 0; x < ppm->width; x++)
         for (y = 0; y < ppm->height; y++)
             easyppm_set(ppm, x, y, c);
+}
+
+void easyppm_set(ppmstruct* ppm, int x, int y, color c) {
+    ppm->image[x + y*ppm->width] = c;
+}
+
+color easyppm_get(ppmstruct* ppm, int x, int y) {
+    return ppm->image[x + y*ppm->width];
+}
+
+color easyppm_rgb(uint8_t r, uint8_t g, uint8_t b) {
+    color c;
+
+    c.r = r;
+    c.g = g;
+    c.b = b;
+
+    return c;
+}
+
+/* TODO */
+color easyppm_rgb_float(float r, float g, float b) {
+    color c;
+
+    c.r = 0;
+    c.g = 0;
+    c.b = 0;
+
+    return c;
+}
+
+color easyppm_grey(uint8_t gr) {
+    color c;
+
+    c.r = gr;
+    c.g = gr;
+    c.b = gr;
+
+    return c;
+}
+
+
+/* TODO */
+color easyppm_grey_float(float gr) {
+    color c;
+
+    c.r = 0;
+    c.g = 0;
+    c.b = 0;
+
+    return c;
 }
 
 /*
@@ -58,7 +123,7 @@ void easyppm_write(ppmstruct* ppm, const char* path) {
  */
 void easyppm_destroy(ppmstruct* ppm) {
     if (ppm)
-        free(ppm);
+        free(ppm->image);
 }
 
 /*

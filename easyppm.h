@@ -15,18 +15,18 @@ typedef struct {
 
 typedef enum {
     ORIGIN_LOWERLEFT,
-    ORIGIN_UPPERLEFT,
+    ORIGIN_UPPERLEFT
 } origin;
 
 typedef enum {
     IMAGETYPE_PPM,
-    IMAGETYPE_PGM,
+    IMAGETYPE_PGM
 } imagetype;
 
 typedef struct {
     int       width;
     int       height;
-    uint8_t*  image;
+    color*    image;
     origin    otype;
     imagetype itype;
 } ppmstruct;
