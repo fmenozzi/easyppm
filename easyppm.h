@@ -33,19 +33,19 @@ typedef struct {
     uint8_t*  image;
     origin    otype;
     imagetype itype;
-} ppmstruct;
+} PPM;
 
-ppmstruct easyppm_create(int width, int height, imagetype itype, origin otype);
-void      easyppm_clear(ppmstruct* ppm, color c);
-void      easyppm_set(ppmstruct* ppm, int x, int y, color c);
-color     easyppm_get(ppmstruct* ppm, int x, int y);
-color     easyppm_rgb(uint8_t r, uint8_t g, uint8_t b);
-color     easyppm_grey(uint8_t gr);
-color     easyppm_black_white(int bw);
-void      easyppm_gamma_correct(ppmstruct* ppm, float gamma);
-void      easyppm_read(ppmstruct* ppm, const char* path, origin otype);
-void      easyppm_write(ppmstruct* ppm, const char* path);
-void      easyppm_destroy(ppmstruct* ppm);
+PPM   easyppm_create(int width, int height, imagetype itype, origin otype);
+void  easyppm_clear(PPM* ppm, color c);
+void  easyppm_set(PPM* ppm, int x, int y, color c);
+color easyppm_get(PPM* ppm, int x, int y);
+color easyppm_rgb(uint8_t r, uint8_t g, uint8_t b);
+color easyppm_grey(uint8_t gr);
+color easyppm_black_white(int bw);
+void  easyppm_gamma_correct(PPM* ppm, float gamma);
+void  easyppm_read(PPM* ppm, const char* path, origin otype);
+void  easyppm_write(PPM* ppm, const char* path);
+void  easyppm_destroy(PPM* ppm);
 
 #ifdef __cplusplus
 }

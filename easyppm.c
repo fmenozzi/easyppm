@@ -5,28 +5,28 @@
 #include <string.h>
 #include <math.h>
 
-ppmstruct easyppm_create(int width, int height, imagetype itype, origin otype);
-void      easyppm_clear(ppmstruct* ppm, color c);
-void      easyppm_set(ppmstruct* ppm, int x, int y, color c);
-color     easyppm_get(ppmstruct* ppm, int x, int y);
-color     easyppm_rgb(uint8_t r, uint8_t g, uint8_t b);
-color     easyppm_grey(uint8_t gr);
-color     easyppm_black_white(int bw);
-void      easyppm_gamma_correct(ppmstruct* ppm, float gamma);
-void      easyppm_read(ppmstruct* ppm, const char* path, origin otype);
-void      easyppm_write(ppmstruct* ppm, const char* path);
-void      easyppm_destroy(ppmstruct* ppm);
+PPM   easyppm_create(int width, int height, imagetype itype, origin otype);
+void  easyppm_clear(PPM* ppm, color c);
+void  easyppm_set(PPM* ppm, int x, int y, color c);
+color easyppm_get(PPM* ppm, int x, int y);
+color easyppm_rgb(uint8_t r, uint8_t g, uint8_t b);
+color easyppm_grey(uint8_t gr);
+color easyppm_black_white(int bw);
+void  easyppm_gamma_correct(PPM* ppm, float gamma);
+void  easyppm_read(PPM* ppm, const char* path, origin otype);
+void  easyppm_write(PPM* ppm, const char* path);
+void  easyppm_destroy(PPM* ppm);
 
-static void easyppm_abort(ppmstruct* ppm, const char* msg);
-static void easyppm_check_extension(ppmstruct* ppm, const char* path);
+static void easyppm_abort(PPM* ppm, const char* msg);
+static void easyppm_check_extension(PPM* ppm, const char* path);
 static int  easyppm_is_grey(color c);
 static int  easyppm_is_black_white(color c);
 
 /*
- * Creates new ppmstruct from args, aborts if dimensions are invalid
+ * Creates new PPM from args, aborts if dimensions are invalid
  */
-ppmstruct easyppm_create(int width, int height, imagetype itype, origin otype) {
-    ppmstruct ppm;
+PPM easyppm_create(int width, int height, imagetype itype, origin otype) {
+    PPM ppm;
 
     if (width <= 0)
         easyppm_abort(NULL, "Passed negative width");
@@ -49,11 +49,11 @@ ppmstruct easyppm_create(int width, int height, imagetype itype, origin otype) {
 /*
  * Fill entire color buffer with specified color
  */
-void easyppm_clear(ppmstruct* ppm, color c) {
+void easyppm_clear(PPM* ppm, color c) {
     int x, y;
 
     if (!ppm)
-        easyppm_abort(ppm, "Passed NULL ppmstruct to easyppm_clear()");
+        easyppm_abort(ppm, "Passed NULL PPM to easyppm_clear()");
 
     if (ppm->itype == IMAGETYPE_PBM && !easyppm_is_black_white(c))
         easyppm_abort(ppm, "Passed invalid color to easyppm_clear() for PBM image");
@@ -68,11 +68,11 @@ void easyppm_clear(ppmstruct* ppm, color c) {
 /*
  * Set appropriate color (RGB or greyscale)
  */
-void easyppm_set(ppmstruct* ppm, int x, int y, color c) {
+void easyppm_set(PPM* ppm, int x, int y, color c) {
     int i;
 
     if (!ppm)
-        easyppm_abort(ppm, "Passed NULL ppmstruct to easyppm_set()");
+        easyppm_abort(ppm, "Passed NULL PPM to easyppm_set()");
 
     i = x + y*ppm->width;
 
@@ -88,12 +88,12 @@ void easyppm_set(ppmstruct* ppm, int x, int y, color c) {
 /*
  * Get appropriate color (RGB or greyscale)
  */
-color easyppm_get(ppmstruct* ppm, int x, int y) {
+color easyppm_get(PPM* ppm, int x, int y) {
     color c;
     int i;
 
     if (!ppm)
-        easyppm_abort(ppm, "Passed NULL ppmstruct to easyppm_get()");
+        easyppm_abort(ppm, "Passed NULL PPM to easyppm_get()");
 
     i = x + y*ppm->width;
 
@@ -154,14 +154,14 @@ color easyppm_black_white(int bw) {
 /*
  * Gamma-correct entire image by specified amount
  */
-void easyppm_gamma_correct(ppmstruct* ppm, float gamma) {
+void easyppm_gamma_correct(PPM* ppm, float gamma) {
     int x, y;
     float r, g, b;
     float exp = 1 / gamma;
     color c;
 
     if (!ppm)
-        easyppm_abort(ppm, "Passed NULL ppmstruct to easyppm_gamma_correct()");
+        easyppm_abort(ppm, "Passed NULL PPM to easyppm_gamma_correct()");
 
     for (x = 0; x < ppm->width; x++) {
         for (y = 0; y < ppm->height; y++) {
@@ -182,7 +182,7 @@ void easyppm_gamma_correct(ppmstruct* ppm, float gamma) {
  * doesn't match the image type (.pbm for PBM files, .pgm for
  * PGM files, and .ppm for PPM files).
  */
-void easyppm_read(ppmstruct* ppm, const char* path, origin otype) {
+void easyppm_read(PPM* ppm, const char* path, origin otype) {
     FILE* fp;
     char itypestr[3];
     int width, height, dummy;
@@ -192,7 +192,7 @@ void easyppm_read(ppmstruct* ppm, const char* path, origin otype) {
     color c;
 
     if (!ppm)
-        easyppm_abort(ppm, "Passed NULL ppmstruct to easyppm_read()");
+        easyppm_abort(ppm, "Passed NULL PPM to easyppm_read()");
 
     easyppm_check_extension(ppm, path);
 
@@ -265,12 +265,12 @@ void easyppm_read(ppmstruct* ppm, const char* path, origin otype) {
  * (.pbm for PBM files, .pgm for PGM files, and .ppm for PPM
  * files).
  */
-void easyppm_write(ppmstruct* ppm, const char* path) {
+void easyppm_write(PPM* ppm, const char* path) {
     FILE* fp;
     int x, y;
 
     if (!ppm)
-        easyppm_abort(ppm, "Passed NULL ppmstruct to easyppm_write()");
+        easyppm_abort(ppm, "Passed NULL PPM to easyppm_write()");
 
     easyppm_check_extension(ppm, path);
 
@@ -308,7 +308,7 @@ void easyppm_write(ppmstruct* ppm, const char* path) {
 /*
  * Free image buffer
  */
-void easyppm_destroy(ppmstruct* ppm) {
+void easyppm_destroy(PPM* ppm) {
     if (ppm && ppm->image)
         free(ppm->image);
     ppm = NULL;
@@ -317,7 +317,7 @@ void easyppm_destroy(ppmstruct* ppm) {
 /*
  * Cleanup resources and abort program
  */
-static void easyppm_abort(ppmstruct* ppm, const char* msg) {
+static void easyppm_abort(PPM* ppm, const char* msg) {
     fprintf(stderr, "%s\n", msg);
     fprintf(stderr, "Aborting\n");
     easyppm_destroy(ppm);
@@ -325,17 +325,17 @@ static void easyppm_abort(ppmstruct* ppm, const char* msg) {
 }
 
 /*
- * Check that the image type on the ppmstruct matches the file
+ * Check that the image type on the PPM matches the file
  * extension on the filepath provided
  */
-static void easyppm_check_extension(ppmstruct* ppm, const char* path) {
+static void easyppm_check_extension(PPM* ppm, const char* path) {
     const char* extension;
     size_t i;
     int found;
     int ends_pbm, ends_pgm, ends_ppm;
 
     if (!ppm)
-        easyppm_abort(ppm, "Passed NULL ppmstruct to easyppm_check_extension()");
+        easyppm_abort(ppm, "Passed NULL PPM to easyppm_check_extension()");
 
     found = 0;
     for (i = 0; i < strlen(path); i++) {

@@ -7,7 +7,7 @@ void assert(int pred, const char* msg) {
         fprintf(stderr, "ERROR: %s\n", msg);
 }
 
-int images_equal(ppmstruct* ppm1, ppmstruct* ppm2) {
+int images_equal(PPM* ppm1, PPM* ppm2) {
     int x, y;
     color c1, c2;
 
@@ -27,10 +27,10 @@ int images_equal(ppmstruct* ppm1, ppmstruct* ppm2) {
 }
 
 int main() {
-    ppmstruct ppm1 = easyppm_create(100, 100, IMAGETYPE_PPM, ORIGIN_UPPERLEFT);
-    ppmstruct ppm2 = easyppm_create(100, 100, IMAGETYPE_PPM, ORIGIN_UPPERLEFT);
-    ppmstruct pbm1 = easyppm_create(100, 100, IMAGETYPE_PBM, ORIGIN_UPPERLEFT);
-    ppmstruct pbm2 = easyppm_create(100, 100, IMAGETYPE_PBM, ORIGIN_UPPERLEFT);
+    PPM ppm1 = easyppm_create(100, 100, IMAGETYPE_PPM, ORIGIN_UPPERLEFT);
+    PPM ppm2 = easyppm_create(100, 100, IMAGETYPE_PPM, ORIGIN_UPPERLEFT);
+    PPM pbm1 = easyppm_create(100, 100, IMAGETYPE_PBM, ORIGIN_UPPERLEFT);
+    PPM pbm2 = easyppm_create(100, 100, IMAGETYPE_PBM, ORIGIN_UPPERLEFT);
 
     easyppm_clear(&ppm1, easyppm_rgb(255,0,0));
     easyppm_write(&ppm1, "red.ppm");
