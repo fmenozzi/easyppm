@@ -19,6 +19,8 @@ void      easyppm_destroy(ppmstruct* ppm);
 
 static void easyppm_abort(ppmstruct* ppm, const char* msg);
 static void easyppm_check_extension(ppmstruct* ppm, const char* path);
+static int  easyppm_is_grey(color c);
+static int  easyppm_is_black_white(color c);
 
 /*
  * Creates new ppmstruct from args, aborts if dimensions are invalid
@@ -52,6 +54,11 @@ void easyppm_clear(ppmstruct* ppm, color c) {
 
     if (!ppm)
         easyppm_abort(ppm, "Passed NULL ppmstruct to easyppm_clear()");
+
+    if (ppm->itype == IMAGETYPE_PBM && !easyppm_is_black_white(c))
+        easyppm_abort(ppm, "Passed invalid color to easyppm_clear() for PBM image");
+    if (ppm->itype == IMAGETYPE_PGM && !easyppm_is_grey(c))
+        easyppm_abort(ppm, "Passed invalid color to easyppm_clear() for PGM image");
 
     for (x = 0; x < ppm->width; x++)
         for (y = 0; y < ppm->height; y++)
@@ -316,6 +323,10 @@ static void easyppm_abort(ppmstruct* ppm, const char* msg) {
     exit(EXIT_FAILURE);
 }
 
+/*
+ * Check that the image type on the ppmstruct matches the file
+ * extension on the filepath provided
+ */
 static void easyppm_check_extension(ppmstruct* ppm, const char* path) {
     const char* extension;
     size_t i;
@@ -332,4 +343,18 @@ static void easyppm_check_extension(ppmstruct* ppm, const char* path) {
         easyppm_abort(ppm, "File path for PGM file does not end in .pgm");
     if (ppm->itype == IMAGETYPE_PPM && strcmp(extension, ".ppm") != 0)
         easyppm_abort(ppm, "File path for PPM file does not end in .ppm");
+}
+
+/*
+ * Determine if color is greyscale
+ */
+static int easyppm_is_grey(color c) {
+    return c.r == c.g && c.g == c.b;
+}
+
+/*
+ * Determine if color is black or white
+ */
+static int easyppm_is_black_white(color c) {
+    return easyppm_is_grey(c) && (c.r == 255 || c.r == 0);
 }
