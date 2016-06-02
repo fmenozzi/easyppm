@@ -258,7 +258,7 @@ static void easyppm_abort(ppmstruct* ppm, const char* msg) {
 
 static void easyppm_check_extension(ppmstruct* ppm, const char* path) {
     const char* extension;
-    int i;
+    size_t i;
 
     for (i = 0; i < strlen(path); i++)
         if (path[i] == '.')
