@@ -331,18 +331,34 @@ static void easyppm_abort(ppmstruct* ppm, const char* msg) {
 static void easyppm_check_extension(ppmstruct* ppm, const char* path) {
     const char* extension;
     size_t i;
+    int found;
+    int ends_pbm, ends_pgm, ends_ppm;
 
     if (!ppm)
         easyppm_abort(ppm, "Passed NULL ppmstruct to easyppm_check_extension()");
 
-    for (i = 0; i < strlen(path); i++)
-        if (path[i] == '.')
+    found = 0;
+    for (i = 0; i < strlen(path); i++) {
+        if (path[i] == '.') {
             extension = &path[i];
-    if (ppm->itype == IMAGETYPE_PBM && strcmp(extension, ".pbm") != 0)
+            found = 1;
+        }
+    }
+
+    if (!found)
+        easyppm_abort(ppm, "Malformed filepath");
+
+    ends_pbm = strcmp(extension, ".pbm") == 0;
+    ends_pgm = strcmp(extension, ".pgm") == 0;
+    ends_ppm = strcmp(extension, ".ppm") == 0;
+    if (!ends_pbm && !ends_pgm && !ends_ppm)
+        easyppm_abort(ppm, "File path must end in .pbm, .pgm, or .ppm");
+
+    if (ppm->itype == IMAGETYPE_PBM && !ends_pbm)
         easyppm_abort(ppm, "File path for PBM file does not end in .pbm");
-    if (ppm->itype == IMAGETYPE_PGM && strcmp(extension, ".pgm") != 0)
+    if (ppm->itype == IMAGETYPE_PGM && !ends_pgm)
         easyppm_abort(ppm, "File path for PGM file does not end in .pgm");
-    if (ppm->itype == IMAGETYPE_PPM && strcmp(extension, ".ppm") != 0)
+    if (ppm->itype == IMAGETYPE_PPM && !ends_ppm)
         easyppm_abort(ppm, "File path for PPM file does not end in .ppm");
 }
 
