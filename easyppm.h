@@ -8,6 +8,7 @@ extern "C" {
 #include <stdint.h>
 
 #define EASYPPM_NUM_CHANNELS 3
+#define EASYPPM_MAX_CHANNEL_VALUE 255
 
 typedef struct {
     uint8_t r;  
@@ -21,8 +22,9 @@ typedef enum {
 } origin;
 
 typedef enum {
-    IMAGETYPE_PPM,
-    IMAGETYPE_PGM
+    IMAGETYPE_PBM,
+    IMAGETYPE_PGM,
+    IMAGETYPE_PPM
 } imagetype;
 
 typedef struct {
@@ -38,9 +40,8 @@ void      easyppm_clear(ppmstruct* ppm, color c);
 void      easyppm_set(ppmstruct* ppm, int x, int y, color c);
 color     easyppm_get(ppmstruct* ppm, int x, int y);
 color     easyppm_rgb(uint8_t r, uint8_t g, uint8_t b);
-color     easyppm_rgb_float(float r, float g, float b);
 color     easyppm_grey(uint8_t gr);
-color     easyppm_grey_float(float gr);
+color     easyppm_black_white(int bw);
 void      easyppm_gamma_correct(ppmstruct* ppm, float gamma);
 void      easyppm_read(ppmstruct* ppm, const char* path, origin otype);
 void      easyppm_write(ppmstruct* ppm, const char* path);

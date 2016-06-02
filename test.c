@@ -29,6 +29,8 @@ int images_equal(ppmstruct* ppm1, ppmstruct* ppm2) {
 int main() {
     ppmstruct ppm1 = easyppm_create(100, 100, IMAGETYPE_PPM, ORIGIN_UPPERLEFT);
     ppmstruct ppm2 = easyppm_create(100, 100, IMAGETYPE_PPM, ORIGIN_UPPERLEFT);
+    ppmstruct pbm1 = easyppm_create(100, 100, IMAGETYPE_PBM, ORIGIN_UPPERLEFT);
+    ppmstruct pbm2 = easyppm_create(100, 100, IMAGETYPE_PBM, ORIGIN_UPPERLEFT);
 
     easyppm_clear(&ppm1, easyppm_rgb(255,0,0));
     easyppm_write(&ppm1, "red.ppm");
@@ -37,8 +39,16 @@ int main() {
 
     assert(images_equal(&ppm1, &ppm2), "Images are not equal");
 
+    easyppm_clear(&pbm1, easyppm_black_white(1));
+    easyppm_write(&pbm1, "black.pbm");
+    easyppm_read(&pbm2, "black.pbm", ORIGIN_UPPERLEFT);
+    easyppm_clear(&pbm2, easyppm_black_white(0));
+    easyppm_write(&pbm2, "white.pbm");
+
     easyppm_destroy(&ppm1);
     easyppm_destroy(&ppm2);
+    easyppm_destroy(&pbm1);
+    easyppm_destroy(&pbm2);
 
     return 0;
 }
