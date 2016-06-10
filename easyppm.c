@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <math.h>
 
@@ -17,7 +18,7 @@ void  easyppm_read(PPM* ppm, const char* path, origin otype);
 void  easyppm_write(PPM* ppm, const char* path);
 void  easyppm_destroy(PPM* ppm);
 
-static void easyppm_abort(PPM* ppm, const char* msg);
+static void easyppm_abort(PPM* ppm, const char* fmt, ...);
 static void easyppm_check_extension(PPM* ppm, const char* path);
 static int  easyppm_is_grey(color c);
 static int  easyppm_is_black_white(color c);
@@ -28,10 +29,8 @@ static int  easyppm_is_black_white(color c);
 PPM easyppm_create(int width, int height, imagetype itype, origin otype) {
     PPM ppm;
 
-    if (width <= 0)
-        easyppm_abort(NULL, "Passed negative width");
-    if (height <= 0)
-        easyppm_abort(NULL, "Passed negative height");
+    if (width <= 0 || height <= 0)
+        easyppm_abort(NULL, "Invalid image dimensions (%d, %d)\n", width, height);
 
     ppm.width  = width;
     ppm.height = height;
@@ -53,12 +52,12 @@ void easyppm_clear(PPM* ppm, color c) {
     int x, y;
 
     if (!ppm)
-        easyppm_abort(ppm, "Passed NULL PPM to easyppm_clear()");
+        easyppm_abort(ppm, "Passed NULL PPM to easyppm_clear()\n");
 
     if (ppm->itype == IMAGETYPE_PBM && !easyppm_is_black_white(c))
-        easyppm_abort(ppm, "Passed invalid color to easyppm_clear() for PBM image");
+        easyppm_abort(ppm, "Passed invalid color to easyppm_clear() for PBM image\n");
     if (ppm->itype == IMAGETYPE_PGM && !easyppm_is_grey(c))
-        easyppm_abort(ppm, "Passed invalid color to easyppm_clear() for PGM image");
+        easyppm_abort(ppm, "Passed invalid color to easyppm_clear() for PGM image\n");
 
     for (x = 0; x < ppm->width; x++)
         for (y = 0; y < ppm->height; y++)
@@ -72,7 +71,7 @@ void easyppm_set(PPM* ppm, int x, int y, color c) {
     int i;
 
     if (!ppm)
-        easyppm_abort(ppm, "Passed NULL PPM to easyppm_set()");
+        easyppm_abort(ppm, "Passed NULL PPM to easyppm_set()\n");
 
     i = x + y*ppm->width;
 
@@ -93,7 +92,7 @@ color easyppm_get(PPM* ppm, int x, int y) {
     int i;
 
     if (!ppm)
-        easyppm_abort(ppm, "Passed NULL PPM to easyppm_get()");
+        easyppm_abort(ppm, "Passed NULL PPM to easyppm_get()\n");
 
     i = x + y*ppm->width;
 
@@ -161,17 +160,17 @@ void easyppm_gamma_correct(PPM* ppm, float gamma) {
     color c;
 
     if (!ppm)
-        easyppm_abort(ppm, "Passed NULL PPM to easyppm_gamma_correct()");
+        easyppm_abort(ppm, "Passed NULL PPM to easyppm_gamma_correct()\n");
 
     for (x = 0; x < ppm->width; x++) {
         for (y = 0; y < ppm->height; y++) {
             c = easyppm_get(ppm, x, y);
 
-            r = powf(c.r / (float)EASYPPM_MAX_CHANNEL_VALUE, exp) * 255;
-            g = powf(c.g / (float)EASYPPM_MAX_CHANNEL_VALUE, exp) * 255;
-            b = powf(c.b / (float)EASYPPM_MAX_CHANNEL_VALUE, exp) * 255;
+            r = (uint8_t)(powf(c.r / (float)EASYPPM_MAX_CHANNEL_VALUE, exp) * 255);
+            g = (uint8_t)(powf(c.g / (float)EASYPPM_MAX_CHANNEL_VALUE, exp) * 255);
+            b = (uint8_t)(powf(c.b / (float)EASYPPM_MAX_CHANNEL_VALUE, exp) * 255);
 
-            easyppm_set(ppm, x, y, easyppm_rgb((uint8_t)r, (uint8_t)g, (uint8_t)b));
+            easyppm_set(ppm, x, y, easyppm_rgb(r, g, b));
         }
     }
 }
@@ -192,7 +191,7 @@ void easyppm_read(PPM* ppm, const char* path, origin otype) {
     color c;
 
     if (!ppm)
-        easyppm_abort(ppm, "Passed NULL PPM to easyppm_read()");
+        easyppm_abort(ppm, "Passed NULL PPM to easyppm_read()\n");
 
     easyppm_check_extension(ppm, path);
 
@@ -202,7 +201,7 @@ void easyppm_read(PPM* ppm, const char* path, origin otype) {
 
     fp = fopen(path, "r");
     if (!fp)
-        easyppm_abort(NULL, "Could not open file for reading");
+        easyppm_abort(NULL, "Could not open file %s for reading\n", path);
 
     fscanf(fp, "%s\n", itypestr);
     if (strcmp(itypestr, "P1") == 0) {
@@ -218,13 +217,9 @@ void easyppm_read(PPM* ppm, const char* path, origin otype) {
 
     ppm->width  = width;
     ppm->height = height;
-    if (width <= 0) {
+    if (width <= 0 || height <= 0) {
         fclose(fp);
-        easyppm_abort(NULL, "Passed negative width");
-    }
-    if (height <= 0) {
-        fclose(fp);
-        easyppm_abort(NULL, "Passed negative height");
+        easyppm_abort(NULL, "Passed invalid dimensions to easyppm_read() (%d, %d)\n", width, height);
     }
 
     if (ppm->itype == IMAGETYPE_PBM || ppm->itype == IMAGETYPE_PGM) {
@@ -270,13 +265,13 @@ void easyppm_write(PPM* ppm, const char* path) {
     int x, y;
 
     if (!ppm)
-        easyppm_abort(ppm, "Passed NULL PPM to easyppm_write()");
+        easyppm_abort(ppm, "Passed NULL PPM to easyppm_write()\n");
 
     easyppm_check_extension(ppm, path);
 
     fp = fopen(path, "w");
     if (!fp)
-        easyppm_abort(ppm, "Could not open file for writing");
+        easyppm_abort(ppm, "Could not open file %s for writing\n", path);
 
     if (ppm->itype == IMAGETYPE_PBM) {
         fprintf(fp, "P1\n");
@@ -317,10 +312,15 @@ void easyppm_destroy(PPM* ppm) {
 /*
  * Cleanup resources and abort program
  */
-static void easyppm_abort(PPM* ppm, const char* msg) {
-    fprintf(stderr, "%s\n", msg);
+static void easyppm_abort(PPM* ppm, const char* fmt, ...) {
+    va_list argptr;
+    va_start(argptr, fmt);
+    vfprintf(stderr, fmt, argptr);
+    va_end(argptr);
     fprintf(stderr, "Aborting\n");
+
     easyppm_destroy(ppm);
+
     exit(EXIT_FAILURE);
 }
 
@@ -335,7 +335,7 @@ static void easyppm_check_extension(PPM* ppm, const char* path) {
     int ends_pbm, ends_pgm, ends_ppm;
 
     if (!ppm)
-        easyppm_abort(ppm, "Passed NULL PPM to easyppm_check_extension()");
+        easyppm_abort(ppm, "Passed NULL PPM to easyppm_check_extension()\n");
 
     found = 0;
     for (i = 0; i < strlen(path); i++) {
@@ -346,20 +346,18 @@ static void easyppm_check_extension(PPM* ppm, const char* path) {
     }
 
     if (!found)
-        easyppm_abort(ppm, "Malformed filepath");
+        easyppm_abort(ppm, "Malformed filepath %s\n", path);
 
     ends_pbm = strcmp(extension, ".pbm") == 0;
     ends_pgm = strcmp(extension, ".pgm") == 0;
     ends_ppm = strcmp(extension, ".ppm") == 0;
-    if (!ends_pbm && !ends_pgm && !ends_ppm)
-        easyppm_abort(ppm, "File path must end in .pbm, .pgm, or .ppm");
 
     if (ppm->itype == IMAGETYPE_PBM && !ends_pbm)
-        easyppm_abort(ppm, "File path for PBM file does not end in .pbm");
+        easyppm_abort(ppm, "File path %s for PBM file does not end in .pbm\n", path);
     if (ppm->itype == IMAGETYPE_PGM && !ends_pgm)
-        easyppm_abort(ppm, "File path for PGM file does not end in .pgm");
+        easyppm_abort(ppm, "File path %s for PGM file does not end in .pgm\n", path);
     if (ppm->itype == IMAGETYPE_PPM && !ends_ppm)
-        easyppm_abort(ppm, "File path for PPM file does not end in .ppm");
+        easyppm_abort(ppm, "File path %s for PPM file does not end in .ppm\n", path);
 }
 
 /*
