@@ -60,6 +60,8 @@ int main() {
     easyppm_invert_y(&ppm2);
     easyppm_write(&ppm2, "after.ppm");
 
+    assert(images_equal(&ppm1, &ppm2), "Images are not equal");
+
     easyppm_destroy(&ppm1);
     easyppm_destroy(&ppm2);
 

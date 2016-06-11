@@ -221,16 +221,16 @@ void easyppm_read(PPM* ppm, const char* path) {
     if (!fp)
         easyppm_abort(NULL, "Could not open file %s for reading\n", path);
 
-    fscanf(fp, "%s\n", itypestr);
+    dummy = fscanf(fp, "%s\n", itypestr);
     if (strcmp(itypestr, "P1") == 0) {
         ppm->itype = IMAGETYPE_PBM;
-        fscanf(fp, "%d %d\n", &width, &height);
+        dummy = fscanf(fp, "%d %d\n", &width, &height);
     } else if (strcmp(itypestr, "P2") == 0) {
         ppm->itype = IMAGETYPE_PGM;
-        fscanf(fp, "%d %d %d\n", &width, &height, &dummy);
+        dummy = fscanf(fp, "%d %d %d\n", &width, &height, &dummy);
     } else {
         ppm->itype = IMAGETYPE_PPM;
-        fscanf(fp, "%d %d %d\n", &width, &height, &dummy);
+        dummy = fscanf(fp, "%d %d %d\n", &width, &height, &dummy);
     }
 
     ppm->width  = width;
@@ -249,18 +249,18 @@ void easyppm_read(PPM* ppm, const char* path) {
     for (y = 0; y < height; y++) {
         for (x = 0; x < width; x++) {
             if (ppm->itype == IMAGETYPE_PBM) {
-                fscanf(fp, "%d\n", &gr);
+                dummy = fscanf(fp, "%d\n", &gr);
                 gr = (gr == 0 ? 1 : 0);
                 c.r = gr;
                 c.g = gr;
                 c.b = gr;
             } else if (ppm->itype == IMAGETYPE_PGM) {
-                fscanf(fp, "%d\n", &gr);
+                dummy = fscanf(fp, "%d\n", &gr);
                 c.r = gr;
                 c.g = gr;
                 c.b = gr;
             } else {
-                fscanf(fp, "%d %d %d\n", &r, &g, &b);
+                dummy = fscanf(fp, "%d %d %d\n", &r, &g, &b);
                 c.r = r;
                 c.g = g;
                 c.b = b;
@@ -347,7 +347,7 @@ static void easyppm_abort(PPM* ppm, const char* fmt, ...) {
  * extension on the filepath provided
  */
 static void easyppm_check_extension(PPM* ppm, const char* path) {
-    const char* extension;
+    const char* extension = NULL;
     size_t i;
     int found;
     int ends_pbm, ends_pgm, ends_ppm;
