@@ -1,4 +1,4 @@
-Simple PBM/PGM/PPM image library for C/C++ programs. Use `make` to run test code with `gcc`. Check out the Makefile for more. For more information on the PPM image format, (check out the Wikipedia page)[https://en.wikipedia.org/wiki/Netpbm_format].
+Simple PBM/PGM/PPM image library for C/C++ programs. Use `make` to run test code with `gcc`. Check out the Makefile for more. For more information on the PPM image format, [check out the Wikipedia page](https://en.wikipedia.org/wiki/Netpbm_format).
 
 The API is fairly simple, and consists of the following functions:
 
@@ -54,6 +54,8 @@ Reads non-binary PBM/PGM/PPM images from disk and stores them in the given PPM s
 
 ### easyppm_write
 Writes non-binary PBM/PGM/PPM images to disk from the given PPM struct. The file extension is required to be either ".pbm", ".pgm", or ".ppm", and the inferred image type must match the image type of the PPM struct passed in. Failure to do either results in a runtime error.
+
+    easyppm_write(&ppm, "image.ppm"); // Infers PPM format, must match type of ppm
 
 ### easyppm_destroy
 Frees all resources.
