@@ -10,9 +10,9 @@ CLANGPP_DEBUG = @$(CLANGPP) -g
 
 CMD = test.c easyppm.c -o test -lm && ./test
 
-all: test-gcc clean
+all: test-gcc
 
-test-all: test-gcc test-gpp test-clang test-clangpp clean
+test-all: test-gcc test-gpp test-clang test-clangpp
 
 test-gcc:
 	@echo "Testing with gcc..."
@@ -27,7 +27,6 @@ test-clang:
 test-clangpp:
 	@echo "Testing with clang++..."
 	@$(CLANGPP_DEBUG) $(CMD)
-
 
 clean:
 	@rm -f test *.ppm *.pgm

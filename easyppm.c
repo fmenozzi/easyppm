@@ -6,7 +6,7 @@
 #include <string.h>
 #include <math.h>
 
-PPM   easyppm_create(int width, int height, imagetype itype, origin otype);
+PPM   easyppm_create(int width, int height, imagetype itype);
 void  easyppm_clear(PPM* ppm, color c);
 void  easyppm_set(PPM* ppm, int x, int y, color c);
 color easyppm_get(PPM* ppm, int x, int y);
@@ -14,7 +14,8 @@ color easyppm_rgb(uint8_t r, uint8_t g, uint8_t b);
 color easyppm_grey(uint8_t gr);
 color easyppm_black_white(int bw);
 void  easyppm_gamma_correct(PPM* ppm, float gamma);
-void  easyppm_read(PPM* ppm, const char* path, origin otype);
+void  easyppm_invert_y(PPM* ppm);
+void  easyppm_read(PPM* ppm, const char* path);
 void  easyppm_write(PPM* ppm, const char* path);
 void  easyppm_destroy(PPM* ppm);
 
@@ -26,7 +27,7 @@ static int  easyppm_is_black_white(color c);
 /*
  * Creates new PPM from args, aborts if dimensions are invalid
  */
-PPM easyppm_create(int width, int height, imagetype itype, origin otype) {
+PPM easyppm_create(int width, int height, imagetype itype) {
     PPM ppm;
 
     if (width <= 0 || height <= 0)
@@ -39,7 +40,6 @@ PPM easyppm_create(int width, int height, imagetype itype, origin otype) {
     } else {
         ppm.image = (uint8_t*)malloc(sizeof(*ppm.image) * width*height*EASYPPM_NUM_CHANNELS);
     }
-    ppm.otype  = otype;
     ppm.itype  = itype;
 
     return ppm;
@@ -59,8 +59,8 @@ void easyppm_clear(PPM* ppm, color c) {
     if (ppm->itype == IMAGETYPE_PGM && !easyppm_is_grey(c))
         easyppm_abort(ppm, "Passed invalid color to easyppm_clear() for PGM image\n");
 
-    for (x = 0; x < ppm->width; x++)
-        for (y = 0; y < ppm->height; y++)
+    for (y = 0; y < ppm->height; y++)
+        for (x = 0; x < ppm->width; x++)
             easyppm_set(ppm, x, y, c);
 }
 
@@ -162,8 +162,8 @@ void easyppm_gamma_correct(PPM* ppm, float gamma) {
     if (!ppm)
         easyppm_abort(ppm, "Passed NULL PPM to easyppm_gamma_correct()\n");
 
-    for (x = 0; x < ppm->width; x++) {
-        for (y = 0; y < ppm->height; y++) {
+    for (y = 0; y < ppm->height; y++) {
+        for (x = 0; x < ppm->width; x++) {
             c = easyppm_get(ppm, x, y);
 
             r = (uint8_t)(powf(c.r / (float)EASYPPM_MAX_CHANNEL_VALUE, exp) * 255);
@@ -176,12 +176,32 @@ void easyppm_gamma_correct(PPM* ppm, float gamma) {
 }
 
 /*
+ * Invert image y-axis for applications that assume an origin
+ * in the lower left corner (easyppm defaults to an origin in
+ * the upper left corner)
+ */
+void easyppm_invert_y(PPM* ppm) {
+    int x, yt, yb;
+
+    if (!ppm)
+        easyppm_abort(ppm, "Passed NULL PPM to easyppm_invert_y()\n");
+
+    for (yt = 0, yb = ppm->height-1; yt <= yb; yt++, yb--) {
+        for (x = 0; x < ppm->width; x++) {
+            color tmp = easyppm_get(ppm, x, yb);
+            easyppm_set(ppm, x, yb, easyppm_get(ppm, x, yt));
+            easyppm_set(ppm, x, yt, tmp);
+        }
+    }
+}
+
+/*
  * Read image from file. Aborts if file could not be opened,
  * dimensions are invalid, or the file extension on the path
  * doesn't match the image type (.pbm for PBM files, .pgm for
  * PGM files, and .ppm for PPM files).
  */
-void easyppm_read(PPM* ppm, const char* path, origin otype) {
+void easyppm_read(PPM* ppm, const char* path) {
     FILE* fp;
     char itypestr[3];
     int width, height, dummy;
@@ -196,8 +216,6 @@ void easyppm_read(PPM* ppm, const char* path, origin otype) {
     easyppm_check_extension(ppm, path);
 
     easyppm_destroy(ppm);
-
-    ppm->otype = otype;
 
     fp = fopen(path, "r");
     if (!fp)
@@ -228,8 +246,8 @@ void easyppm_read(PPM* ppm, const char* path, origin otype) {
         ppm->image = (uint8_t*)malloc(sizeof(*ppm->image) * width*height*EASYPPM_NUM_CHANNELS);
     }
 
-    for (x = 0; x < width; x++) {
-        for (y = 0; y < height; y++) {
+    for (y = 0; y < height; y++) {
+        for (x = 0; x < width; x++) {
             if (ppm->itype == IMAGETYPE_PBM) {
                 fscanf(fp, "%d\n", &gr);
                 gr = (gr == 0 ? 1 : 0);
@@ -284,8 +302,8 @@ void easyppm_write(PPM* ppm, const char* path) {
         fprintf(fp, "%d %d %d\n", ppm->width, ppm->height, EASYPPM_MAX_CHANNEL_VALUE);
     }
 
-    for (x = 0; x < ppm->width; x++) {
-        for (y = 0; y < ppm->height; y++) {
+    for (y = 0; y < ppm->height; y++) {
+        for (x = 0; x < ppm->width; x++) {
             color c = easyppm_get(ppm, x, y);
             if (ppm->itype == IMAGETYPE_PBM) {
                 fprintf(fp, "%d\n", c.r == 0 ? 1 : 0);

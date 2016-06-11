@@ -11,6 +11,9 @@ int images_equal(PPM* ppm1, PPM* ppm2) {
     int x, y;
     color c1, c2;
 
+    assert(ppm1 != NULL, "NULL ppm1 passed in images_equal()");
+    assert(ppm2 != NULL, "NULL ppm2 passed in images_equal()");
+
     if (ppm1->width != ppm2->width || ppm1->height != ppm2->height)
         return 0;
 
@@ -26,29 +29,39 @@ int images_equal(PPM* ppm1, PPM* ppm2) {
     return 1;
 }
 
+void draw_rect_ltrb(PPM* ppm, int left, int top, int right, int bottom) {
+    int x, y;
+
+    assert(ppm != NULL, "NULL ppm passed in draw_rect");
+
+    assert(0 <= left   && left   <= ppm->width,  "Invalid left value");
+    assert(0 <= top    && top    <= ppm->height, "Invalid top value");
+    assert(0 <= right  && right  <= ppm->width,  "Invalid right value");
+    assert(0 <= bottom && bottom <= ppm->height, "Invalid bottom value");
+
+    for (x = left; x < right; x++) {
+        for (y = top; y < bottom; y++) {
+            easyppm_set(ppm, x, y, easyppm_rgb(255, 0, 0));
+        }
+    }
+}
+
 int main() {
-    PPM ppm1 = easyppm_create(100, 100, IMAGETYPE_PPM, ORIGIN_UPPERLEFT);
-    PPM ppm2 = easyppm_create(100, 100, IMAGETYPE_PPM, ORIGIN_UPPERLEFT);
-    PPM pbm1 = easyppm_create(100, 100, IMAGETYPE_PBM, ORIGIN_UPPERLEFT);
-    PPM pbm2 = easyppm_create(100, 100, IMAGETYPE_PBM, ORIGIN_UPPERLEFT);
+    PPM ppm1 = easyppm_create(200, 100, IMAGETYPE_PPM);
+    PPM ppm2 = easyppm_create(200, 100, IMAGETYPE_PPM);
 
-    easyppm_clear(&ppm1, easyppm_rgb(255,0,0));
-    easyppm_write(&ppm1, "red.ppm");
+    easyppm_clear(&ppm1, easyppm_rgb(255, 255, 255));
+    easyppm_clear(&ppm2, easyppm_rgb(255, 255, 255));
 
-    easyppm_read(&ppm2, "red.ppm", ORIGIN_UPPERLEFT);
+    draw_rect_ltrb(&ppm1, 0, 0, 40, 40);
+    easyppm_write(&ppm1, "before.ppm");
 
-    assert(images_equal(&ppm1, &ppm2), "Images are not equal");
-
-    easyppm_clear(&pbm1, easyppm_black_white(1));
-    easyppm_write(&pbm1, "black.pbm");
-    easyppm_read(&pbm2, "black.pbm", ORIGIN_UPPERLEFT);
-    easyppm_clear(&pbm2, easyppm_black_white(0));
-    easyppm_write(&pbm2, "white.pbm");
+    draw_rect_ltrb(&ppm2, 0, 60, 40, 100);
+    easyppm_invert_y(&ppm2);
+    easyppm_write(&ppm2, "after.ppm");
 
     easyppm_destroy(&ppm1);
     easyppm_destroy(&ppm2);
-    easyppm_destroy(&pbm1);
-    easyppm_destroy(&pbm2);
 
     return 0;
 }
