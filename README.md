@@ -3,7 +3,7 @@ Simple PBM/PGM/PPM image library for C/C++ programs. Use `make` to run test code
 The API is fairly simple, and consists of the following functions:
 
 ### easyppm_create
-Takes width, height, and image type. Supported image types are IMAGETYPE_PBM (black and white), IMAGETYPE_PGM (greyscale), and IMAGETYPE_PPM (color).
+Takes width, height, and image type. Supported image types are `IMAGETYPE_PBM` (black and white), `IMAGETYPE_PGM` (greyscale), and `IMAGETYPE_PPM` (color).
 
     PPM ppm = easyppm_create(256, 256, IMAGETYPE_PPM);
 
@@ -37,18 +37,18 @@ Returns the black-and-white representation of a color for use in PBM (black-and-
 
     color c = easyppm_black_white(0); // White
 
-### easyppm_gamma_corret
+### easyppm_gamma_correct
 Gamma-correct entire image by specified amount.
 
     easyppm_gamma_correct(&ppm, 2.2f);
 
 ### easyppm_invert_y
-Invert image across y-axis. Note that this does NOT change the origin from the upper-left corner to the lower-left corner; subsequent calls to easyppm_{get,set}_pixel() will still be relative to the upper-left corner. However, this is useful as a final step before sending the image to a system with a different origin (e.g. OpenGL).
+Invert image across y-axis. Note that this does NOT change the origin from the upper-left corner to the lower-left corner; subsequent calls to `easyppm_get()` and `easyppm_set()` will still be relative to the upper-left corner. However, this is useful as a final step before sending the image to a system with a different origin (e.g. OpenGL).
 
     easyppm_invert_y(&ppm);
 
 ### easyppm_read
-Reads non-binary PBM/PGM/PPM images from disk and stores them in the given PPM struct. Because this currently requires max channel values of 255 and one pixel per line, it will likely not work correctly for images not created using easyppm (this is something I hope to address soon). The file extension is required to be either ".pbm", ".pgm", or ".ppm", and the inferred image type must match the image type of the PPM struct passed in. Failure to do so results in a runtime error.
+Reads non-binary PBM/PGM/PPM images from disk and stores them in the given PPM struct. Because this currently requires max channel values of 255 and one pixel per line, it will likely not work correctly for images not created using `easyppm` (this is something I hope to address soon). The file extension is required to be either ".pbm", ".pgm", or ".ppm", and the inferred image type must match the image type of the PPM struct passed in. Failure to do so results in a runtime error.
 
     easyppm_read(&ppm, "image.ppm"); // Infers PPM format, must match type of ppm
 
