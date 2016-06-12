@@ -9,7 +9,7 @@ void assert(int pred, const char* msg) {
 
 int images_equal(PPM* ppm1, PPM* ppm2) {
     int x, y;
-    color c1, c2;
+    ppmcolor c1, c2;
 
     assert(ppm1 != NULL, "NULL ppm1 passed in images_equal()");
     assert(ppm2 != NULL, "NULL ppm2 passed in images_equal()");

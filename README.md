@@ -48,14 +48,14 @@ Invert image across y-axis. Note that this does NOT change the origin from the u
     easyppm_invert_y(&ppm);
 
 ### easyppm_read
-Reads non-binary PBM/PGM/PPM images from disk and stores them in the given PPM struct. Because this currently requires max channel values of 255 and one pixel per line, it will likely not work correctly for images not created using `easyppm` (this is something I hope to address soon). The file extension is required to be either ".pbm", ".pgm", or ".ppm", and the inferred image type must match the image type of the PPM struct passed in. Failure to do so results in a runtime error.
+Reads non-binary PBM/PGM/PPM images from disk and stores them in the given PPM struct. Because this currently requires max channel values of 255 and one pixel per line, it will likely not work correctly for images not created using `easyppm` (this is something I hope to address soon).
 
-    easyppm_read(&ppm, "image.ppm"); // Infers PPM format, must match type of ppm
+    easyppm_read(&ppm, "image.ppm");
 
 ### easyppm_write
-Writes non-binary PBM/PGM/PPM images to disk from the given PPM struct. The file extension is required to be either ".pbm", ".pgm", or ".ppm", and the inferred image type must match the image type of the PPM struct passed in. Failure to do either results in a runtime error.
+Writes non-binary PBM/PGM/PPM images to disk from the given PPM struct.
 
-    easyppm_write(&ppm, "image.ppm"); // Infers PPM format, must match type of ppm
+    easyppm_write(&ppm, "image.ppm");
 
 ### easyppm_destroy
 Frees all resources.

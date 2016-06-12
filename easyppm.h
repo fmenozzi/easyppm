@@ -5,16 +5,16 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
-
 #define EASYPPM_NUM_CHANNELS 3
 #define EASYPPM_MAX_CHANNEL_VALUE 255
 
+#define PPMBYTE unsigned char
+
 typedef struct {
-    uint8_t r;  
-    uint8_t g;  
-    uint8_t b;  
-} color;
+    PPMBYTE r;  
+    PPMBYTE g;  
+    PPMBYTE b;  
+} ppmcolor;
 
 typedef enum {
     IMAGETYPE_PBM,
@@ -25,22 +25,22 @@ typedef enum {
 typedef struct {
     int       width;
     int       height;
-    uint8_t*  image;
+    PPMBYTE*  image;
     imagetype itype;
 } PPM;
 
-PPM   easyppm_create(int width, int height, imagetype itype);
-void  easyppm_clear(PPM* ppm, color c);
-void  easyppm_set(PPM* ppm, int x, int y, color c);
-color easyppm_get(PPM* ppm, int x, int y);
-color easyppm_rgb(uint8_t r, uint8_t g, uint8_t b);
-color easyppm_grey(uint8_t gr);
-color easyppm_black_white(int bw);
-void  easyppm_gamma_correct(PPM* ppm, float gamma);
-void  easyppm_invert_y(PPM* ppm);
-void  easyppm_read(PPM* ppm, const char* path);
-void  easyppm_write(PPM* ppm, const char* path);
-void  easyppm_destroy(PPM* ppm);
+PPM      easyppm_create(int width, int height, imagetype itype);
+void     easyppm_clear(PPM* ppm, ppmcolor c);
+void     easyppm_set(PPM* ppm, int x, int y, ppmcolor c);
+ppmcolor easyppm_get(PPM* ppm, int x, int y);
+ppmcolor easyppm_rgb(PPMBYTE r, PPMBYTE g, PPMBYTE b);
+ppmcolor easyppm_grey(PPMBYTE gr);
+ppmcolor easyppm_black_white(int bw);
+void     easyppm_gamma_correct(PPM* ppm, float gamma);
+void     easyppm_invert_y(PPM* ppm);
+void     easyppm_read(PPM* ppm, const char* path);
+void     easyppm_write(PPM* ppm, const char* path);
+void     easyppm_destroy(PPM* ppm);
 
 #ifdef __cplusplus
 }
