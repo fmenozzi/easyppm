@@ -58,6 +58,8 @@ void easyppm_set(PPM* ppm, int x, int y, ppmcolor c) {
 
     if (!ppm)
         easyppm_abort(ppm, "Passed NULL PPM to easyppm_set()\n");
+    if (x < 0 || x >= ppm->width || y < 0 || y > ppm->height)
+        easyppm_abort(ppm, "Index out of bounds in easyppm_set (%d, %d)\n", x, y);
 
     i = x + y*ppm->width;
 
@@ -79,6 +81,8 @@ ppmcolor easyppm_get(PPM* ppm, int x, int y) {
 
     if (!ppm)
         easyppm_abort(ppm, "Passed NULL PPM to easyppm_get()\n");
+    if (x < 0 || x >= ppm->width || y < 0 || y > ppm->height)
+        easyppm_abort(ppm, "Index out of bounds in easyppm_get (%d, %d)\n", x, y);
 
     i = x + y*ppm->width;
 
@@ -182,10 +186,8 @@ void easyppm_invert_y(PPM* ppm) {
 }
 
 /*
- * Read image from file. Aborts if file could not be opened,
- * dimensions are invalid, or the file extension on the path
- * doesn't match the image type (.pbm for PBM files, .pgm for
- * PGM files, and .ppm for PPM files).
+ * Read image from file. Aborts if file could not be opened
+ * or the dimensions are invalid.
  */
 void easyppm_read(PPM* ppm, const char* path) {
     FILE* fp;
@@ -306,7 +308,6 @@ void easyppm_write(PPM* ppm, const char* path) {
 void easyppm_destroy(PPM* ppm) {
     if (ppm && ppm->image)
         free(ppm->image);
-    ppm = NULL;
 }
 
 /*
